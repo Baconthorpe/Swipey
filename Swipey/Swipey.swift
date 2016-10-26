@@ -208,16 +208,16 @@ public class SwipeCard: TrackTouchView {
             frame.origin.x = startingFrame.origin.x + currentOffset.x
             thresholdProximity = Double(currentOffset.x) / threshold
             
-            let degrees = 30 * thresholdProximity
-            let rotationAngle = CGFloat(degrees * (M_PI / 180.0))
-            transform = CGAffineTransform(rotationAngle: rotationAngle)
+//            let degrees = 30 * thresholdProximity
+//            let rotationAngle = CGFloat(degrees * (M_PI / 180.0))
+//            transform = CGAffineTransform(rotationAngle: rotationAngle)
         } else {
             frame.origin.y = startingFrame.origin.y + currentOffset.y
             thresholdProximity = Double(currentOffset.y) / threshold
             
-            let degrees = -30 * thresholdProximity
-            let rotationAngle = CGFloat(degrees * (M_PI / 180.0))
-            transform = CGAffineTransform(rotationAngle: rotationAngle)
+//            let degrees = -30 * thresholdProximity
+//            let rotationAngle = CGFloat(degrees * (M_PI / 180.0))
+//            transform = CGAffineTransform(rotationAngle: rotationAngle)
         }
     }
     
