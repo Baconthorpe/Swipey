@@ -34,6 +34,15 @@ public class SwipeDeck: UIView, SwipeCardDelegate {
     // MARK: Population
     
     public func reloadData() {
+        if let existingTopCard = topCard {
+            existingTopCard.removeFromSuperview()
+            topCard = nil
+        }
+        if let existingBottomCard = bottomCard {
+            existingBottomCard.removeFromSuperview()
+            bottomCard = nil
+        }
+        
         numberOfCards = numberOfCards(swipeDeck: self)
         if numberOfCards > 0 {
             // A top card is needed
@@ -46,20 +55,24 @@ public class SwipeDeck: UIView, SwipeCardDelegate {
     }
     
     private func createTopCard() {
-        let size = sizeOfCardAt(index: 0, swipeDeck: self)
-        topCard = cardFor(index: 0, swipeDeck: self)
+        let size = CGSize(width: frame.size.width * 0.9, height: frame.size.height * 0.9)
+        let index = numberOfCards - 1
+        topCard = cardFor(index: index, swipeDeck: self)
         topCard!.frame.size = size
         topCard!.center = center
         topCard!.delegate = self
+        topCard!.isUserInteractionEnabled = true
         addSubview(topCard!)
     }
     
     private func createBottomCard() {
-        let size = sizeOfCardAt(index: 1, swipeDeck: self)
-        bottomCard = cardFor(index: 1, swipeDeck: self)
+        let size = CGSize(width: frame.size.width * 0.9, height: frame.size.height * 0.9)
+        let index = numberOfCards - 2
+        bottomCard = cardFor(index: index, swipeDeck: self)
         bottomCard!.frame.size = size
         bottomCard!.center = center
         bottomCard!.delegate = self
+        bottomCard!.isUserInteractionEnabled = false
         addSubview(bottomCard!)
         sendSubview(toBack: bottomCard!)
     }
@@ -67,14 +80,13 @@ public class SwipeDeck: UIView, SwipeCardDelegate {
     // MARK: Swiping
     
     private func moveToNextCard() {
-        if let remainingTopCard = topCard {
-            remainingTopCard.removeFromSuperview()
-        }
-        
         numberOfCards -= 1
         topCard = bottomCard
+        if let newTopCard = topCard {
+            newTopCard.isUserInteractionEnabled = true
+        }
+        
         if numberOfCards > 1 {
-            // A new bottom card is needed
             createBottomCard()
         } else {
             bottomCard = nil
@@ -83,16 +95,24 @@ public class SwipeDeck: UIView, SwipeCardDelegate {
     
     // MARK: Swipe Card Delegate
     
-    public func swipedPositive(swipeView: SwipeCard) {
+    public func swipedPositive(swipeCard: SwipeCard) {
+        moveToNextCard()
+        
         if let existingDelegate = delegate {
             existingDelegate.positiveSwipe(swipeDeck: self)
         }
     }
     
-    public func swipedNegative(swipeView: SwipeCard) {
+    public func swipedNegative(swipeCard: SwipeCard) {
+        moveToNextCard()
+        
         if let existingDelegate = delegate {
             existingDelegate.negativeSwipe(swipeDeck: self)
         }
+    }
+    
+    public func swipeAnimationComplete(swipeCard: SwipeCard) {
+        swipeCard.removeFromSuperview()
     }
     
     // MARK: Methods To Be Delegated
@@ -104,41 +124,17 @@ public class SwipeDeck: UIView, SwipeCardDelegate {
         return 0
     }
     
-    private func sizeOfCardAt(index: Int, swipeDeck: SwipeDeck) -> CGSize {
-        if let existingDelegate = delegate {
-            return existingDelegate.sizeOfCardAt(index: index, swipeDeck: swipeDeck)
-        }
-        return CGSize(width: frame.size.width * 0.9, height: frame.size.height * 0.9)
-    }
-    
     private func cardFor(index: Int, swipeDeck: SwipeDeck) -> SwipeCard {
         if let existingDelegate = delegate {
             return existingDelegate.cardFor(index: index, swipeDeck: swipeDeck)
         }
         return SwipeCard()
     }
-    
-    func positiveSwipe() {
-        moveToNextCard()
-        
-        if let existingDelegate = delegate {
-            existingDelegate.positiveSwipe(swipeDeck: self)
-        }
-    }
-    
-    func negativeSwipe() {
-        moveToNextCard()
-        
-        if let existingDelegate = delegate {
-            existingDelegate.negativeSwipe(swipeDeck: self)
-        }
-    }
 }
 
 // MARK:
 public protocol SwipeDeckDelegate {
     func numberOfCards(swipeDeck: SwipeDeck) -> Int
-    func sizeOfCardAt(index: Int, swipeDeck: SwipeDeck) -> CGSize
     func cardFor(index: Int, swipeDeck: SwipeDeck) -> SwipeCard
     func positiveSwipe(swipeDeck: SwipeDeck)
     func negativeSwipe(swipeDeck: SwipeDeck)
@@ -151,15 +147,25 @@ public class SwipeCard: TrackTouchView {
     
     public var delegate: SwipeCardDelegate?
     public var swipeOrientation: SwipeOrientation = .horizontal
-    private(set) var thresholdProximity = 0.0
+    public private(set) var thresholdProximity = 0.0
     
     private var startingFrame = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
     private lazy var threshold: Double = self.setThreshold()
     private func setThreshold() -> Double {
         if swipeOrientation == .horizontal {
-            return Double(frame.width / 3)
+            return Double(frame.width / 2)
         }
-        return Double(frame.height / 3)
+        return Double(frame.height / 2)
+    }
+    
+    // MARK: Initialization
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
     }
     
     // MARK: Touch Detection
@@ -193,11 +199,11 @@ public class SwipeCard: TrackTouchView {
         // Report to delegate
         if let existingDelegate = delegate {
             if positiveSwipe {
-                existingDelegate.swipedPositive(swipeView: self)
+                existingDelegate.swipedPositive(swipeCard: self)
             } else if negativeSwipe {
-                existingDelegate.swipedNegative(swipeView: self)
+                existingDelegate.swipedNegative(swipeCard: self)
             }
-//            existingDelegate.trackedTouchEnded(swipeView: self)
+            //            existingDelegate.trackedTouchEnded(swipeView: self)
         }
     }
     
@@ -207,17 +213,9 @@ public class SwipeCard: TrackTouchView {
         if swipeOrientation == .horizontal {
             frame.origin.x = startingFrame.origin.x + currentOffset.x
             thresholdProximity = Double(currentOffset.x) / threshold
-            
-//            let degrees = 30 * thresholdProximity
-//            let rotationAngle = CGFloat(degrees * (M_PI / 180.0))
-//            transform = CGAffineTransform(rotationAngle: rotationAngle)
         } else {
             frame.origin.y = startingFrame.origin.y + currentOffset.y
             thresholdProximity = Double(currentOffset.y) / threshold
-            
-//            let degrees = -30 * thresholdProximity
-//            let rotationAngle = CGFloat(degrees * (M_PI / 180.0))
-//            transform = CGAffineTransform(rotationAngle: rotationAngle)
         }
     }
     
@@ -228,26 +226,34 @@ public class SwipeCard: TrackTouchView {
             UIView.animate(withDuration: 1.0, animations: {
                 self.frame.origin.x = self.startingFrame.origin.x + self.startingFrame.width * 3
                 }, completion: { (completed) in
-                    self.removeFromSuperview()
+                    self.completeSwipe()
             })
         } else if positive && swipeOrientation == .vertical {
             UIView.animate(withDuration: 1.0, animations: {
                 self.frame.origin.y = self.startingFrame.origin.y + self.startingFrame.height * 3
                 }, completion: { (completed) in
-                    self.removeFromSuperview()
+                    self.completeSwipe()
             })
         } else if !positive && swipeOrientation == .horizontal {
             UIView.animate(withDuration: 1.0, animations: {
                 self.frame.origin.x = self.startingFrame.origin.x - self.startingFrame.width * 3
                 }, completion: { (completed) in
-                    self.removeFromSuperview()
+                    self.completeSwipe()
             })
         } else if !positive && swipeOrientation == .vertical {
             UIView.animate(withDuration: 1.0, animations: {
                 self.frame.origin.y = self.startingFrame.origin.y - self.startingFrame.height * 3
                 }, completion: { (completed) in
-                    self.removeFromSuperview()
+                    self.completeSwipe()
             })
+        }
+    }
+    
+    func completeSwipe() {
+        if let existingDelegate = delegate {
+            existingDelegate.swipeAnimationComplete(swipeCard: self)
+        } else {
+            self.removeFromSuperview()
         }
     }
     
@@ -271,8 +277,9 @@ public enum SwipeOrientation {
 
 // MARK:
 public protocol SwipeCardDelegate {
-    func swipedPositive(swipeView: SwipeCard)
-    func swipedNegative(swipeView: SwipeCard)
+    func swipedPositive(swipeCard: SwipeCard)
+    func swipedNegative(swipeCard: SwipeCard)
+    func swipeAnimationComplete(swipeCard: SwipeCard)
 }
 
 // MARK:
