@@ -410,6 +410,7 @@
 				B33E55471DB737E800837A7F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B33E55481DB737E800837A7F /* Build configuration list for PBXNativeTarget "SwipeyTests" */ = {
 			isa = XCConfigurationList;
@@ -418,6 +419,7 @@
 				B33E554A1DB737E800837A7F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

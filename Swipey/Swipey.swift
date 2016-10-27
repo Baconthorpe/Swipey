@@ -54,23 +54,23 @@ public class SwipeDeck: UIView, SwipeCardDelegate {
         }
     }
     
+    public func produceSwipeCard() -> SwipeCard {
+        return SwipeCard(frame: frame)
+    }
+    
     private func createTopCard() {
-        let size = CGSize(width: frame.size.width * 0.9, height: frame.size.height * 0.9)
         let index = numberOfCards - 1
         topCard = cardFor(index: index, swipeDeck: self)
-        topCard!.frame.size = size
-        topCard!.center = center
+        topCard!.center = CGPoint(x: frame.width / 2, y: frame.height / 2)
         topCard!.delegate = self
         topCard!.isUserInteractionEnabled = true
         addSubview(topCard!)
     }
     
     private func createBottomCard() {
-        let size = CGSize(width: frame.size.width * 0.9, height: frame.size.height * 0.9)
         let index = numberOfCards - 2
         bottomCard = cardFor(index: index, swipeDeck: self)
-        bottomCard!.frame.size = size
-        bottomCard!.center = center
+        bottomCard!.center = CGPoint(x: frame.width / 2, y: frame.height / 2)
         bottomCard!.delegate = self
         bottomCard!.isUserInteractionEnabled = false
         addSubview(bottomCard!)
@@ -158,14 +158,46 @@ public class SwipeCard: TrackTouchView {
         return Double(frame.height / 2)
     }
     
+    private static let swipeAnimationDuration = 0.4
+    private static let returnAnimationDuration = 0.3
+    
     // MARK: Initialization
+    
+    public convenience init(frame: CGRect, swipeOrientation: SwipeOrientation) {
+        self.init(frame: frame)
+        
+        self.swipeOrientation = swipeOrientation
+    }
+    
+    public convenience init(frame: CGRect, cornerRadius: CGFloat) {
+        self.init(frame: frame)
+        
+        configureCorners(radius: cornerRadius)
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
+        configureCorners(radius: nil)
     }
     
     public required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        
+        configureCorners(radius: nil)
+    }
+    
+    private func configureCorners(radius: CGFloat?) {
+        if let providedRadius = radius {
+            layer.cornerRadius = providedRadius
+        } else {
+            if frame.height > frame.width {
+                layer.cornerRadius = frame.height / 10.0
+            } else {
+                layer.cornerRadius = frame.width / 10.0
+            }
+        }
+        layer.masksToBounds = true
     }
     
     // MARK: Touch Detection
@@ -223,25 +255,25 @@ public class SwipeCard: TrackTouchView {
         if positive && swipeOrientation == .horizontal {
             isUserInteractionEnabled = false
             
-            UIView.animate(withDuration: 1.0, animations: {
+            UIView.animate(withDuration: SwipeCard.swipeAnimationDuration, animations: {
                 self.frame.origin.x = self.startingFrame.origin.x + self.startingFrame.width * 3
                 }, completion: { (completed) in
                     self.completeSwipe()
             })
         } else if positive && swipeOrientation == .vertical {
-            UIView.animate(withDuration: 1.0, animations: {
+            UIView.animate(withDuration: SwipeCard.swipeAnimationDuration, animations: {
                 self.frame.origin.y = self.startingFrame.origin.y + self.startingFrame.height * 3
                 }, completion: { (completed) in
                     self.completeSwipe()
             })
         } else if !positive && swipeOrientation == .horizontal {
-            UIView.animate(withDuration: 1.0, animations: {
+            UIView.animate(withDuration: SwipeCard.swipeAnimationDuration, animations: {
                 self.frame.origin.x = self.startingFrame.origin.x - self.startingFrame.width * 3
                 }, completion: { (completed) in
                     self.completeSwipe()
             })
         } else if !positive && swipeOrientation == .vertical {
-            UIView.animate(withDuration: 1.0, animations: {
+            UIView.animate(withDuration: SwipeCard.swipeAnimationDuration, animations: {
                 self.frame.origin.y = self.startingFrame.origin.y - self.startingFrame.height * 3
                 }, completion: { (completed) in
                     self.completeSwipe()
@@ -260,7 +292,7 @@ public class SwipeCard: TrackTouchView {
     func animateReturn() {
         isUserInteractionEnabled = false
         
-        UIView.animate(withDuration: 0.5, animations: {
+        UIView.animate(withDuration: SwipeCard.returnAnimationDuration, animations: {
             self.frame.origin = self.startingFrame.origin
             }, completion: { (completed) in
                 self.startingFrame = CGRect(x: 0.0, y: 0.0, width: 0.0, height: 0.0)
