@@ -241,7 +241,7 @@ public class SwipeCard: TrackTouchView {
     
     // MARK: Movement and Animation
     
-    func moveToOffset() {
+    private func moveToOffset() {
         if swipeOrientation == .horizontal {
             frame.origin.x = startingFrame.origin.x + currentOffset.x
             thresholdProximity = Double(currentOffset.x) / threshold
@@ -251,7 +251,7 @@ public class SwipeCard: TrackTouchView {
         }
     }
     
-    func animateSwipe(positive: Bool) {
+    private func animateSwipe(positive: Bool) {
         if positive && swipeOrientation == .horizontal {
             isUserInteractionEnabled = false
             
@@ -281,7 +281,7 @@ public class SwipeCard: TrackTouchView {
         }
     }
     
-    func completeSwipe() {
+    private func completeSwipe() {
         if let existingDelegate = delegate {
             existingDelegate.swipeAnimationComplete(swipeCard: self)
         } else {
@@ -289,7 +289,7 @@ public class SwipeCard: TrackTouchView {
         }
     }
     
-    func animateReturn() {
+    private func animateReturn() {
         isUserInteractionEnabled = false
         
         UIView.animate(withDuration: SwipeCard.returnAnimationDuration, animations: {
