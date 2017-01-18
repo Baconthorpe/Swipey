@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "Swipey"
-  s.version      = "0.6"
+  s.version      = "0.7"
   s.summary      = "Swipey is a simple swipe card library by Zeke Abuhoff."
 
   # This description is used to generate tags and improve search results.
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   #   * Try to keep it short, snappy and to the point.
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
-  s.description  = "Swipey is a simple swipe card library by Zeke Abuhoff."
+  s.description  = "Swipey is a simple swipe card library by Zeke Abuhoff. It provides UI elements that can be swiped."
 
   s.homepage     = "https://github.com/Baconthorpe/Swipey"
   # s.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
@@ -89,8 +89,8 @@ Pod::Spec.new do |s|
   #  Not including the public_header_files will make all headers public.
   #
 
-  s.source_files  = "Classes", "Classes/**/*.{h,m}"
-  s.exclude_files = "Classes/Exclude"
+  s.source_files  = 'Swipey/*.{swift,plist,h}'
+  # s.exclude_files = "Classes/Exclude"
 
   # s.public_header_files = "Classes/**/*.h"
 
