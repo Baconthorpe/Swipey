@@ -249,7 +249,7 @@ public class SwipeCard: TrackTouchView {
     }
     
     private func rotate(to degrees: CGFloat) {
-        let radians = degrees * CGFloat(M_PI/180)
+        let radians = degrees * (CGFloat.pi/180)
         transform = CGAffineTransform.identity.rotated(by: radians)
     }
     

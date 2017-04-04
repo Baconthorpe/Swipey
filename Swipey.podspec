@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "Swipey"
-  s.version      = "0.10"
+  s.version      = "0.11"
   s.summary      = "Swipey is a simple swipe card library by Zeke Abuhoff."
 
   # This description is used to generate tags and improve search results.
